@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dress Right</title>
+    <script src="https://unpkg.com/axios/dist/axios.min.js"></script>
+    <script>
+        function setColor() {
+            const d = new Date()
+            let hours = d.getHours()
+            let minutes = d.getMinutes()
+
+            let sunset = 20
+            let sunrise = 7
+
+            siteBackgroundColor = ""
+
+            if (hours > sunset || hours < sunrise) {
+                siteBackgroundColor = "#0a2f5a"
+            } else {
+                siteBackgroundColor = "#a1e0e9"
+            }
+
+            document.body.style.backgroundColor = siteBackgroundColor
+        }
+        // if the 
+        existingUserLocation = localStorage.getItem('coords')
+
+        const locationPromise = new Promise((resolve, reject) => {
+            console.log('inside the location promise');
+            return navigator.geolocation.getCurrentPosition(resolve, reject)
+        }, () => {
+            console.warn('Location request was rejected.');
+        })
+        
+        locationPromise
+            .then((response) => {
+                console.log('1st in promise chain: ', response)
+                let coords = [response.coords.latitude, response.coords.longitude, new Date()]
+                localStorage.setItem('coords', coords)
+                return getWeather(coords)
+            })
+            .then((response) => {
+                console.log('2nd in promise chain: ', response)
+                console.log(response.data.current_weather.temperature);
+                return response.data.current_weather.temperature
+            })
+            .then((response) => {
+                console.log('3rd in promise chain:', response);
+                text = document.createElement('p')
+                text.innerText = response
+                body = document.getElementById('body')
+                body.appendChild(text)
+            })
+            .catch((err) => {
+                console.warn(`in the warning of the location promise chain: ${err}`);
+            })
+
+        // function getUserCoordinates() {
+        //     // Get user coordinates so we can provide weather from their current location.
+        //     let location = navigator.geolocation.getCurrentPosition((position) => {
+        //         let coords = [position.coords.latitude, position.coords.longitude, new Date()]
+        //         localStorage.setItem('coords', coords)
+        //         return coords
+        //     },
+        //     (err) => {
+        //         console.warn(`Error(${err.code}): ${err.message}`)
+        //     })   
+        // }
+
+        function getWeather(coords) {
+            let [lat, long] = coords
+            if (typeof(coords) === 'object') {
+                return axios
+                    .get(`https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${long}&hourly=temperature_2m&current_weather=true`)
+            }
+        }
+
+        function reverseAddressUser(coords) {
+            let [lat, long] = coords
+            if (typeof(coords) === 'object') {
+                axios
+                    .get(`https://nominatim.openstreetmap.org/reverse?format=xml&lat=${lat}&lon=${long}&zoom=18&addressdetails=1`)
+                    .then((response) => {
+
+                    })
+            } else {
+                console.warn('Coordinates not provided correctly.');
+            }
+        }
+
+        // if (existingUserLocation) {
+        //     getUserCoordinates()
+        // }
+
+        
+
+        // getUserCoordinates()
+
+    </script>
+</head>
+<body onLoad="setColor()" id="body">
+    
+</body>
+</html>
