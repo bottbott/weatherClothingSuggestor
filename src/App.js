@@ -21,7 +21,7 @@ function getWeather(coords) {
   let [lat, long] = coords
   if (typeof(coords) === 'object') {
       return axios
-          .get(`https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${long}&hourly=temperature_2m&current_weather=true`)
+          .get(`https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${long}&hourly=temperature_2m,rain,snowfall,weathercode&current_weather=true&timezone=auto`)
   }
 }
 
@@ -35,8 +35,7 @@ const locationPromise = new Promise((resolve, reject) => {
 const App = () => {
   const [error, setError] = useState(null)
   const [isLoaded, setIsLoaded] = useState(false)
-  const [items, setItems] = useState([])
-  const [weather, setWeather] = useState(null)
+  const [weather, setWeather] = useState([])
 
   useEffect(() => {
     locationPromise
@@ -49,20 +48,14 @@ const App = () => {
       .then((response) => {
           console.log('2nd in promise chain: ', response)
           console.log(response.data.current_weather.temperature);
-          return response.data.current_weather.temperature
-      })
-      .then((response) => {
-          console.log('3rd in promise chain:', response);
+          setWeather(response.data)
           setIsLoaded(true)
-          setItems(response)
-          setWeather(response)
-          console.log('the response:', response);
       }, (err) => {
         setIsLoaded(true)
         setError(err)
         console.warn(`in the warning of the location promise chain: ${err}`);
       })
-  })
+  }, [])
 
   if (error) {
     return <div>Error: {error.message}</div>
